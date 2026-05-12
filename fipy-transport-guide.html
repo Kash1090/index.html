@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FiPy Transport Guide — Scalar Transport & Numerical Methods</title>
+<link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;600&family=Source+Sans+3:wght@300;400;600;700&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --blue-dark:   #0d47a1;
+    --blue-mid:    #1565c0;
+    --blue-light:  #1976d2;
+    --blue-pale:   #e3f2fd;
+    --blue-border: #bbdefb;
+    --accent:      #0288d1;
+    --accent2:     #00acc1;
+    --white:       #ffffff;
+    --gray-bg:     #f5f9ff;
+    --gray-text:   #37474f;
+    --gray-light:  #eceff1;
+    --code-bg:     #f0f7ff;
+    --sidebar-w:   260px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Source Sans 3', sans-serif;
+    font-weight: 400;
+    color: var(--gray-text);
+    background: var(--white);
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ── SIDEBAR ── */
+  #sidebar {
+    width: var(--sidebar-w);
+    min-height: 100vh;
+    background: var(--blue-dark);
+    color: #fff;
+    position: fixed;
+    top: 0; left: 0;
+    overflow-y: auto;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+  }
+
+  #sidebar .logo {
+    padding: 24px 20px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.15);
+  }
+
+  #sidebar .logo h1 {
+    font-family: 'Source Code Pro', monospace;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: 0.02em;
+  }
+
+  #sidebar .logo p {
+    font-size: 0.72rem;
+    color: #90caf9;
+    margin-top: 4px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  #sidebar nav { padding: 16px 0; flex: 1; }
+
+  #sidebar nav .section-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #90caf9;
+    padding: 16px 20px 6px;
+  }
+
+  #sidebar nav a {
+    display: block;
+    padding: 7px 20px 7px 28px;
+    font-size: 0.85rem;
+    color: #e3f2fd;
+    text-decoration: none;
+    border-left: 3px solid transparent;
+    transition: all 0.15s;
+    line-height: 1.4;
+  }
+
+  #sidebar nav a:hover,
+  #sidebar nav a.active {
+    background: rgba(255,255,255,0.1);
+    border-left-color: #64b5f6;
+    color: #fff;
+  }
+
+  #sidebar .version-badge {
+    padding: 16px 20px;
+    border-top: 1px solid rgba(255,255,255,0.12);
+    font-size: 0.72rem;
+    color: #90caf9;
+  }
+
+  /* ── MAIN ── */
+  #main {
+    margin-left: var(--sidebar-w);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Top bar */
+  #topbar {
+    background: var(--white);
+    border-bottom: 1px solid var(--blue-border);
+    padding: 0 40px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+
+  #topbar .breadcrumb {
+    font-size: 0.82rem;
+    color: #78909c;
+    font-family: 'Source Code Pro', monospace;
+  }
+
+  #topbar .breadcrumb span { color: var(--blue-light); }
+
+  #topbar .links a {
+    font-size: 0.8rem;
+    color: var(--blue-light);
+    text-decoration: none;
+    margin-left: 20px;
+    font-weight: 600;
+  }
+
+  #topbar .links a:hover { text-decoration: underline; }
+
+  /* Content */
+  #content {
+    padding: 48px 60px 80px;
+    max-width: 920px;
+  }
+
+  /* Page title */
+  .page-title {
+    font-family: 'Source Serif 4', serif;
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--blue-dark);
+    margin-bottom: 8px;
+    line-height: 1.2;
+  }
+
+  .page-subtitle {
+    font-size: 1rem;
+    color: #546e7a;
+    margin-bottom: 32px;
+    font-style: italic;
+    font-family: 'Source Serif 4', serif;
+  }
+
+  /* Section headers */
+  h2 {
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--blue-dark);
+    margin: 48px 0 14px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--blue-border);
+  }
+
+  h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--blue-mid);
+    margin: 28px 0 10px;
+  }
+
+  h4 {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin: 20px 0 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  p { line-height: 1.75; margin-bottom: 14px; font-size: 0.95rem; }
+
+  /* Inline code */
+  code {
+    font-family: 'Source Code Pro', monospace;
+    font-size: 0.85em;
+    background: var(--code-bg);
+    border: 1px solid var(--blue-border);
+    border-radius: 3px;
+    padding: 1px 5px;
+    color: var(--blue-mid);
+  }
+
+  /* Code blocks */
+  pre {
+    background: #011627;
+    border-radius: 6px;
+    padding: 20px 24px;
+    overflow-x: auto;
+    margin: 16px 0 24px;
+    border-left: 4px solid var(--accent);
+    position: relative;
+  }
+
+  pre code {
+    font-family: 'Source Code Pro', monospace;
+    font-size: 0.82rem;
+    background: none;
+    border: none;
+    padding: 0;
+    color: #cdd9e5;
+    line-height: 1.7;
+  }
+
+  .kw  { color: #c792ea; }   /* keywords */
+  .fn  { color: #82aaff; }   /* functions */
+  .st  { color: #c3e88d; }   /* strings */
+  .cm  { color: #546e7a; font-style: italic; } /* comments */
+  .nm  { color: #f78c6c; }   /* numbers */
+  .op  { color: #89ddff; }   /* operators */
+
+  /* Note/tip boxes */
+  .note, .tip, .warning {
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin: 18px 0;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    border-left: 4px solid;
+  }
+
+  .note    { background: #e3f2fd; border-color: var(--blue-light); }
+  .tip     { background: #e0f7fa; border-color: var(--accent2); }
+  .warning { background: #fff8e1; border-color: #f9a825; }
+
+  .note strong, .tip strong, .warning strong {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .note strong    { color: var(--blue-mid); }
+  .tip strong     { color: var(--accent2); }
+  .warning strong { color: #f57f17; }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 18px 0 28px;
+    font-size: 0.88rem;
+  }
+
+  th {
+    background: var(--blue-dark);
+    color: #fff;
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.8rem;
+    letter-spacing: 0.04em;
+  }
+
+  td {
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--blue-border);
+    vertical-align: top;
+  }
+
+  tr:nth-child(even) td { background: var(--gray-bg); }
+  tr:hover td { background: var(--blue-pale); }
+
+  td code { font-size: 0.8rem; }
+
+  /* Section divider */
+  hr { border: none; border-top: 1px solid var(--blue-border); margin: 40px 0; }
+
+  /* Parameter list */
+  .param-list { margin: 10px 0 20px; }
+  .param-list dt {
+    font-family: 'Source Code Pro', monospace;
+    font-size: 0.85rem;
+    color: var(--blue-mid);
+    font-weight: 600;
+    margin-top: 12px;
+  }
+  .param-list dd {
+    font-size: 0.88rem;
+    margin-left: 20px;
+    color: var(--gray-text);
+    line-height: 1.6;
+  }
+
+  /* Example label */
+  .example-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: -8px;
+    margin-top: 24px;
+  }
+
+  /* Math display */
+  .math-block {
+    background: var(--gray-bg);
+    border: 1px solid var(--blue-border);
+    border-radius: 6px;
+    padding: 14px 20px;
+    margin: 16px 0;
+    font-family: 'Source Serif 4', serif;
+    font-size: 1rem;
+    color: var(--blue-dark);
+    text-align: center;
+  }
+
+  /* TOC right panel */
+  #toc {
+    position: fixed;
+    right: 0; top: 52px;
+    width: 200px;
+    padding: 24px 16px;
+    font-size: 0.75rem;
+    color: #78909c;
+    border-left: 1px solid var(--blue-border);
+    height: calc(100vh - 52px);
+    overflow-y: auto;
+    display: none;
+  }
+
+  @media (min-width: 1280px) { #toc { display: block; } }
+
+  #toc .toc-title {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #90a4ae;
+    margin-bottom: 10px;
+  }
+
+  #toc a {
+    display: block;
+    color: #78909c;
+    text-decoration: none;
+    padding: 3px 0 3px 8px;
+    border-left: 2px solid transparent;
+    line-height: 1.4;
+    transition: all 0.15s;
+  }
+
+  #toc a:hover { color: var(--blue-light); border-left-color: var(--blue-light); }
+
+  /* Footer */
+  footer {
+    background: var(--gray-bg);
+    border-top: 1px solid var(--blue-border);
+    padding: 20px 60px;
+    font-size: 0.78rem;
+    color: #90a4ae;
+    margin-left: var(--sidebar-w);
+  }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside id="sidebar">
+  <div class="logo">
+    <h1>fipy-transport</h1>
+    <p>Scalar Transport Guide</p>
+  </div>
+  <nav>
+    <div class="section-label">Getting Started</div>
+    <a href="#overview" class="active">Overview</a>
+    <a href="#workflow">General Workflow</a>
+    <a href="#imports">Imports & Setup</a>
+
+    <div class="section-label">Core Concepts</div>
+    <a href="#mesh">Mesh Definition</a>
+    <a href="#variables">Variables</a>
+    <a href="#boundary">Boundary Conditions</a>
+    <a href="#equations">Equations & Terms</a>
+    <a href="#solving">Solving: solve() vs sweep()</a>
+    <a href="#peclet">Péclet Number</a>
+
+    <div class="section-label">Examples</div>
+    <a href="#ex-laplace1d">Laplace 1D — Chemical Potential</a>
+    <a href="#ex-laplace2d">Laplace 2D — Heat Conduction</a>
+    <a href="#ex-laplace3d">Laplace 3D — Vacancy Concentration</a>
+    <a href="#ex-convdiff">Convection–Diffusion 1D</a>
+    <a href="#ex-transient">Transient Diffusion</a>
+    <a href="#ex-full">Full Transport Equation</a>
+
+    <div class="section-label">Diagnostics</div>
+    <a href="#convergence">Convergence & Residuals</a>
+    <a href="#errors">Error Metrics</a>
+    <a href="#timing">Execution Time</a>
+  </nav>
+  <div class="version-badge">
+    FiPy 3.x &nbsp;·&nbsp; NumPy 1.x &nbsp;·&nbsp; Python 3.10+
+  </div>
+</aside>
+
+<!-- TOPBAR -->
+<div id="topbar">
+  <div class="breadcrumb">fipy-transport / <span>scalar-transport-guide</span></div>
+  <div class="links">
+    <a href="https://www.ctcms.nist.gov/fipy/" target="_blank">FiPy Docs ↗</a>
+    <a href="https://numpy.org/doc/" target="_blank">NumPy Docs ↗</a>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div id="main">
+<div id="content">
+
+<!-- ══════════════════════════════════════════════ -->
+<h1 class="page-title">Scalar Transport Guide</h1>
+<p class="page-subtitle">Numerical methods for diffusion, convection, and transient transport using FiPy and NumPy</p>
+
+<!-- OVERVIEW -->
+<h2 id="overview">Overview</h2>
+<p>This guide covers the numerical solution of scalar transport problems using <strong>FiPy</strong>, a finite-volume PDE solver for Python. It is intended as a practical reference for problems involving:</p>
+<ul style="margin: 10px 0 16px 24px; line-height: 2; font-size: 0.95rem;">
+  <li>Stationary diffusion (Laplace equation)</li>
+  <li>Steady-state convection–diffusion</li>
+  <li>Transient diffusion and transport</li>
+  <li>Full scalar transport with source terms</li>
+</ul>
+
+<div class="note">
+  <strong>Note</strong>
+  FiPy uses the <strong>finite volume method (FVM)</strong>. Unlike finite differences, FVM ensures local conservation on each control volume, making it well-suited for transport problems.
+</div>
+
+<p>The general scalar transport equation is:</p>
+<div class="math-block">∂φ/∂t + ∇·(u φ) = ∇·(D ∇φ) + S</div>
+<p>Special cases — Laplace, diffusion, convection–diffusion — emerge by setting appropriate terms to zero.</p>
+
+<!-- WORKFLOW -->
+<h2 id="workflow">General Workflow</h2>
+<p>Every FiPy simulation follows the same five-step structure, regardless of the physical problem:</p>
+
+<table>
+  <tr><th>Step</th><th>Action</th><th>FiPy construct</th></tr>
+  <tr><td>1</td><td>Define the domain</td><td><code>Grid1D</code>, <code>Grid2D</code>, <code>Grid3D</code></td></tr>
+  <tr><td>2</td><td>Define the unknown field</td><td><code>CellVariable</code></td></tr>
+  <tr><td>3</td><td>Apply boundary conditions</td><td><code>.constrain()</code>, <code>.faceGrad.constrain()</code></td></tr>
+  <tr><td>4</td><td>Write the PDE</td><td><code>DiffusionTerm</code>, <code>TransientTerm</code>, etc.</td></tr>
+  <tr><td>5</td><td>Solve</td><td><code>.solve()</code> or <code>.sweep()</code></td></tr>
+</table>
+
+<!-- IMPORTS -->
+<h2 id="imports">Imports & Setup</h2>
+<p class="example-label">Standard imports</p>
+<pre><code><span class="kw">import</span> numpy <span class="kw">as</span> np
+<span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> plt
+<span class="kw">import</span> time
+
+<span class="cm"># FiPy — import only what you need</span>
+<span class="kw">from</span> fipy <span class="kw">import</span> (
+    CellVariable, Grid1D, Grid2D, Grid3D,
+    DiffusionTerm, TransientTerm,
+    ExponentialConvectionTerm, ImplicitSourceTerm
+)</code></pre>
+
+<div class="tip">
+  <strong>Tip — JupyterLite</strong>
+  If you are running in a JupyterLite environment, install FiPy before importing it:
+  <pre style="margin-top: 8px;"><code><span class="kw">import</span> piplite
+<span class="kw">await</span> piplite.<span class="fn">install</span>(<span class="st">'fipy'</span>)</code></pre>
+</div>
+
+<!-- MESH -->
+<h2 id="mesh">Mesh Definition</h2>
+<p>The mesh discretises the physical domain into control volumes. FiPy provides uniform structured meshes for 1D, 2D, and 3D problems.</p>
+
+<dl class="param-list">
+  <dt>Grid1D(dx, nx)</dt>
+  <dd>1D mesh of <code>nx</code> cells, each of width <code>dx</code>.</dd>
+  <dt>Grid2D(dx, dy, nx, ny)</dt>
+  <dd>2D rectangular mesh.</dd>
+  <dt>Grid3D(dx, dy, dz, nx, ny, nz)</dt>
+  <dd>3D block mesh.</dd>
+</dl>
+
+<p class="example-label">Example — 1D mesh</p>
+<pre><code>L, N = <span class="nm">1.0</span>, <span class="nm">100</span>
+dx   = L / N
+mesh = <span class="fn">Grid1D</span>(dx=dx, nx=N)
+
+<span class="cm"># Cell-center coordinates (useful for plotting)</span>
+x = np.<span class="fn">array</span>(mesh.cellCenters[<span class="nm">0</span>])</code></pre>
+
+<p class="example-label">Example — 2D mesh</p>
+<pre><code>Lx, Ly = <span class="nm">1.0</span>, <span class="nm">0.4</span>
+Nx, Ny = <span class="nm">150</span>, <span class="nm">60</span>
+dx, dy = Lx/Nx, Ly/Ny
+
+mesh = <span class="fn">Grid2D</span>(dx=dx, dy=dy, nx=Nx, ny=Ny)
+
+<span class="cm"># For visualisation, reshape cell data to (Ny, Nx)</span>
+<span class="cm"># FiPy stores data in Fortran order:</span>
+phi_2d = np.<span class="fn">array</span>(phi.value).<span class="fn">reshape</span>((Nx, Ny), order=<span class="st">"F"</span>).T</code></pre>
+
+<div class="warning">
+  <strong>Important — Array reshaping</strong>
+  FiPy stores cell values in Fortran (column-major) order. Always reshape with <code>order="F"</code> and transpose to obtain a <code>(Ny, Nx)</code> array compatible with matplotlib's <code>contourf</code>.
+</div>
+
+<!-- VARIABLES -->
+<h2 id="variables">Variables</h2>
+<p><code>CellVariable</code> holds the unknown field at every cell centre. It supports arithmetic, gradients, and constraints.</p>
+
+<dl class="param-list">
+  <dt>name</dt><dd>Label for the variable (used in output).</dd>
+  <dt>mesh</dt><dd>The mesh the variable lives on.</dd>
+  <dt>value</dt><dd>Initial value — scalar (uniform) or array (non-uniform).</dd>
+</dl>
+
+<p class="example-label">Uniform initial condition</p>
+<pre><code>phi = <span class="fn">CellVariable</span>(name=<span class="st">"concentration"</span>, mesh=mesh, value=<span class="nm">0.0</span>)</code></pre>
+
+<p class="example-label">Non-uniform initial condition</p>
+<pre><code>x       = np.<span class="fn">array</span>(mesh.cellCenters[<span class="nm">0</span>])
+c_init  = np.<span class="fn">where</span>(x &lt; <span class="nm">0.10</span>, <span class="nm">1.0</span>, <span class="nm">0.0</span>)   <span class="cm"># step profile</span>
+c       = <span class="fn">CellVariable</span>(name=<span class="st">"c"</span>, mesh=mesh, value=c_init)</code></pre>
+
+<!-- BOUNDARY CONDITIONS -->
+<h2 id="boundary">Boundary Conditions</h2>
+
+<h3>Dirichlet — fixed value</h3>
+<p>Use <code>.constrain(value, where)</code> to pin the variable on a set of faces.</p>
+<pre><code>phi.<span class="fn">constrain</span>(<span class="nm">1.0</span>, mesh.facesLeft)    <span class="cm"># φ(0) = 1</span>
+phi.<span class="fn">constrain</span>(<span class="nm">0.0</span>, mesh.facesRight)   <span class="cm"># φ(L) = 0</span></code></pre>
+
+<h3>Neumann — fixed flux</h3>
+<p>Use <code>.faceGrad.constrain([value], where)</code> to fix the normal gradient.</p>
+<pre><code><span class="cm"># Homogeneous Neumann (insulated / no-flux) — also the FiPy default</span>
+phi.faceGrad.<span class="fn">constrain</span>([<span class="nm">0.0</span>], mesh.facesTop)
+
+<span class="cm"># Non-homogeneous Neumann (prescribed flux)</span>
+phi.faceGrad.<span class="fn">constrain</span>([<span class="nm">-0.4</span>], mesh.facesRight)</code></pre>
+
+<div class="note">
+  <strong>Note</strong>
+  FiPy imposes a homogeneous Neumann condition by default on any face that has no explicit constraint. You only need to call <code>.faceGrad.constrain([0.0], ...)</code> when you want to be explicit or when other faces do carry a flux.
+</div>
+
+<table>
+  <tr><th>Face selector</th><th>Meaning</th></tr>
+  <tr><td><code>mesh.facesLeft</code></td><td>x = 0</td></tr>
+  <tr><td><code>mesh.facesRight</code></td><td>x = Lx</td></tr>
+  <tr><td><code>mesh.facesBottom</code></td><td>y = 0</td></tr>
+  <tr><td><code>mesh.facesTop</code></td><td>y = Ly</td></tr>
+</table>
+
+<!-- EQUATIONS -->
+<h2 id="equations">Equations & Terms</h2>
+
+<table>
+  <tr><th>Physical term</th><th>PDE term</th><th>FiPy class</th></tr>
+  <tr><td>Time derivative</td><td>∂φ/∂t</td><td><code>TransientTerm()</code></td></tr>
+  <tr><td>Diffusion</td><td>∇·(D ∇φ)</td><td><code>DiffusionTerm(coeff=D)</code></td></tr>
+  <tr><td>Convection</td><td>∇·(u φ)</td><td><code>ExponentialConvectionTerm(coeff=[[u]])</code></td></tr>
+  <tr><td>Linear source/sink</td><td>−λ φ</td><td><code>ImplicitSourceTerm(coeff=λ)</code></td></tr>
+  <tr><td>Uniform source</td><td>S</td><td>add <code>S</code> to the right-hand side</td></tr>
+</table>
+
+<h3>Common equations</h3>
+
+<p class="example-label">Laplace (stationary, no source)</p>
+<pre><code>eq = <span class="fn">DiffusionTerm</span>(coeff=D)        <span class="cm"># ∇·(D ∇φ) = 0</span></code></pre>
+
+<p class="example-label">Transient diffusion</p>
+<pre><code>eq = <span class="fn">TransientTerm</span>() == <span class="fn">DiffusionTerm</span>(coeff=D)</code></pre>
+
+<p class="example-label">Steady convection–diffusion</p>
+<pre><code>eq = <span class="fn">DiffusionTerm</span>(coeff=D) - <span class="fn">ExponentialConvectionTerm</span>(coeff=[[u]])</code></pre>
+
+<p class="example-label">Full transient transport with source and sink</p>
+<pre><code>eq = (<span class="fn">TransientTerm</span>()
+     + <span class="fn">ExponentialConvectionTerm</span>(coeff=[[u]])
+     == <span class="fn">DiffusionTerm</span>(coeff=D) - <span class="fn">ImplicitSourceTerm</span>(coeff=lam) + S)</code></pre>
+
+<div class="tip">
+  <strong>Tip — ExponentialConvectionTerm</strong>
+  Always use <code>ExponentialConvectionTerm</code> (not <code>ConvectionTerm</code>) for convection–diffusion problems. It uses an exponential interpolation scheme that is stable for all Péclet numbers and avoids spurious oscillations.
+</div>
+
+<!-- SOLVING -->
+<h2 id="solving">Solving: <code>solve()</code> vs <code>sweep()</code></h2>
+
+<table>
+  <tr><th></th><th><code>solve()</code></th><th><code>sweep()</code></th></tr>
+  <tr><td>Iterations per call</td><td>Until convergence</td><td>One</td></tr>
+  <tr><td>Residual access</td><td>No</td><td>Yes — return value</td></tr>
+  <tr><td>Convergence control</td><td>Internal</td><td>Manual</td></tr>
+  <tr><td>Best for</td><td>Quick prototypes</td><td>Diagnostics, large systems</td></tr>
+</table>
+
+<p class="example-label">Using solve()</p>
+<pre><code>eq.<span class="fn">solve</span>(var=phi)     <span class="cm"># stationary problems</span>
+eq.<span class="fn">solve</span>(var=phi, dt=dt)  <span class="cm"># transient step</span></code></pre>
+
+<p class="example-label">Using sweep() with convergence monitoring</p>
+<pre><code>tol, max_iter = <span class="nm">1e-8</span>, <span class="nm">5000</span>
+residuos = []
+
+<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(max_iter):
+    res = eq.<span class="fn">sweep</span>(var=phi)
+    residuos.<span class="fn">append</span>(res)
+    <span class="kw">if</span> res &lt; tol:
+        <span class="fn">print</span>(<span class="st">f"Converged in </span>{i+<span class="nm">1</span>}<span class="st"> iterations"</span>)
+        <span class="kw">break</span>
+
+<span class="cm"># Transient: one sweep per time step</span>
+res = eq.<span class="fn">sweep</span>(var=phi, dt=dt)</code></pre>
+
+<!-- PECLET -->
+<h2 id="peclet">Péclet Number</h2>
+<p>The Péclet number quantifies the relative importance of convection versus diffusion:</p>
+<div class="math-block">Pe = u L / D</div>
+
+<table>
+  <tr><th>Regime</th><th>Criterion</th><th>Profile shape</th></tr>
+  <tr><td>Diffusion-dominated</td><td>Pe ≪ 1</td><td>Linear</td></tr>
+  <tr><td>Moderate convection</td><td>Pe ~ 1–10</td><td>Curved</td></tr>
+  <tr><td>Strong convection</td><td>Pe ≫ 1</td><td>Flat with boundary layer</td></tr>
+</table>
+
+<pre><code>Pe = (u * L) / D
+
+<span class="kw">if</span>   Pe &lt; <span class="nm">1</span>:   regime = <span class="st">"diffusion-dominated"</span>
+<span class="kw">elif</span> Pe &lt;= <span class="nm">10</span>: regime = <span class="st">"moderate convection"</span>
+<span class="kw">else</span>:          regime = <span class="st">"strong convection"</span>
+
+<span class="fn">print</span>(<span class="st">f"Pe = </span>{Pe:<span class="nm">.2f</span>}<span class="st"> → </span>{regime}<span class="st">"</span>)</code></pre>
+
+<hr/>
+
+<!-- ══ EXAMPLES ══ -->
+<h2 id="ex-laplace1d">Example 1 — Laplace 1D: Chemical Potential in a Membrane</h2>
+<p>Steady-state transport of chemical potential μ(x) across a 1D membrane. No sources, no convection — pure diffusion at equilibrium.</p>
+<div class="math-block">d²μ/dx² = 0 &nbsp;&nbsp; with &nbsp;&nbsp; μ(0) = μ_A, &nbsp; μ(L) = μ_B</div>
+<p>Analytical solution: <strong>μ(x) = μ_A + (μ_B − μ_A) · x / L</strong> (linear).</p>
+
+<pre><code><span class="kw">from</span> fipy <span class="kw">import</span> CellVariable, Grid1D, DiffusionTerm
+
+L, N   = <span class="nm">1.0</span>, <span class="nm">101</span>
+dx     = L / (N - <span class="nm">1</span>)
+mu_A, mu_B = <span class="nm">1.0</span>, <span class="nm">0.2</span>
+omega  = <span class="nm">1.8</span>
+tol    = <span class="nm">1e-8</span>
+
+<span class="cm"># FiPy solution</span>
+mesh = <span class="fn">Grid1D</span>(dx=dx, nx=N-<span class="nm">1</span>)
+mu   = <span class="fn">CellVariable</span>(name=<span class="st">"mu"</span>, mesh=mesh, value=<span class="nm">0.0</span>)
+mu.<span class="fn">constrain</span>(mu_A, mesh.facesLeft)
+mu.<span class="fn">constrain</span>(mu_B, mesh.facesRight)
+
+eq = <span class="fn">DiffusionTerm</span>(coeff=<span class="nm">1.0</span>)
+res, it = <span class="nm">1e10</span>, <span class="nm">0</span>
+<span class="kw">while</span> res > tol:
+    res = eq.<span class="fn">sweep</span>(var=mu)
+    it += <span class="nm">1</span>
+
+<span class="fn">print</span>(<span class="st">f"Converged: </span>{it}<span class="st"> iterations, residual = </span>{res:.3e}<span class="st">"</span>)
+
+<span class="cm"># Analytical solution</span>
+x_fp   = np.<span class="fn">array</span>(mesh.cellCenters[<span class="nm">0</span>])
+mu_ana = mu_A + (mu_B - mu_A) / L * x_fp
+error  = np.<span class="fn">max</span>(np.<span class="fn">abs</span>(np.<span class="fn">array</span>(mu.value) - mu_ana))
+<span class="fn">print</span>(<span class="st">f"Max error vs analytical: </span>{error:.3e}<span class="st">"</span>)</code></pre>
+
+<!-- ══ EXAMPLE 2 ══ -->
+<h2 id="ex-laplace2d">Example 2 — Laplace 2D: Heat Conduction in a Plate</h2>
+<p>Temperature distribution T(x,y) in a rectangular plate with fixed temperatures on left/right borders and insulated top/bottom.</p>
+<div class="math-block">∇²T = 0</div>
+
+<pre><code><span class="kw">from</span> fipy <span class="kw">import</span> CellVariable, Grid2D, DiffusionTerm
+
+Lx, Ly = <span class="nm">1.0</span>, <span class="nm">0.4</span>
+Nx, Ny = <span class="nm">150</span>, <span class="nm">60</span>
+dx, dy = Lx/Nx, Ly/Ny
+Th, Tc, k = <span class="nm">145.0</span>, <span class="nm">85.0</span>, <span class="nm">385.0</span>
+
+mesh = <span class="fn">Grid2D</span>(dx=dx, dy=dy, nx=Nx, ny=Ny)
+T    = <span class="fn">CellVariable</span>(name=<span class="st">"Temperature"</span>, mesh=mesh, value=<span class="nm">0.0</span>)
+
+T.<span class="fn">constrain</span>(Th, mesh.facesLeft)
+T.<span class="fn">constrain</span>(Tc, mesh.facesRight)
+<span class="cm"># Top/bottom: default homogeneous Neumann (insulated)</span>
+
+eq  = <span class="fn">DiffusionTerm</span>(coeff=k)
+res, it = <span class="nm">1e10</span>, <span class="nm">0</span>
+<span class="kw">while</span> res > <span class="nm">1e-6</span> <span class="kw">and</span> it < <span class="nm">4000</span>:
+    res = eq.<span class="fn">sweep</span>(var=T)
+    it += <span class="nm">1</span>
+
+<span class="cm"># Reshape for plotting</span>
+T_grid = np.<span class="fn">array</span>(T.value).<span class="fn">reshape</span>((Nx, Ny), order=<span class="st">"F"</span>).T
+x_c = np.<span class="fn">linspace</span>(dx/<span class="nm">2</span>, Lx-dx/<span class="nm">2</span>, Nx)
+y_c = np.<span class="fn">linspace</span>(dy/<span class="nm">2</span>, Ly-dy/<span class="nm">2</span>, Ny)
+X, Y = np.<span class="fn">meshgrid</span>(x_c, y_c)
+
+<span class="cm"># Heat flux: q = -k ∇T</span>
+dTdx, dTdy = np.<span class="fn">gradient</span>(T_grid, dx, dy)
+qx, qy = -k * dTdx, -k * dTdy
+
+plt.<span class="fn">figure</span>(figsize=(<span class="nm">12</span>, <span class="nm">4</span>))
+plt.<span class="fn">subplot</span>(<span class="nm">1</span>,<span class="nm">2</span>,<span class="nm">1</span>)
+plt.<span class="fn">contourf</span>(X, Y, T_grid, <span class="nm">50</span>, cmap=<span class="st">"BuPu"</span>)
+plt.<span class="fn">colorbar</span>(label=<span class="st">"T (°C)"</span>)
+plt.<span class="fn">title</span>(<span class="st">"Temperature distribution"</span>)
+plt.<span class="fn">subplot</span>(<span class="nm">1</span>,<span class="nm">2</span>,<span class="nm">2</span>)
+plt.<span class="fn">streamplot</span>(X, Y, qx, qy, color=np.<span class="fn">sqrt</span>(qx**<span class="nm">2</span>+qy**<span class="nm">2</span>), cmap=<span class="st">"BuPu"</span>)
+plt.<span class="fn">title</span>(<span class="st">"Heat flux lines"</span>)
+plt.<span class="fn">tight_layout</span>()
+plt.<span class="fn">show</span>()</code></pre>
+
+<!-- ══ EXAMPLE 3 ══ -->
+<h2 id="ex-laplace3d">Example 3 — Laplace 3D: Vacancy Concentration in a Crystal</h2>
+<p>Three-dimensional Laplace problem on a cubic domain. Demonstrates <code>Grid3D</code> and 3D data extraction for a mid-plane slice.</p>
+
+<pre><code><span class="kw">from</span> fipy <span class="kw">import</span> CellVariable, Grid3D, DiffusionTerm
+
+Lx=Ly=Lz=<span class="nm">1.0</span>;  Nx=Ny=Nz=<span class="nm">20</span>
+dx=Lx/Nx; dy=Ly/Ny; dz=Lz/Nz
+
+mesh = <span class="fn">Grid3D</span>(dx=dx, dy=dy, dz=dz, nx=Nx, ny=Ny, nz=Nz)
+c    = <span class="fn">CellVariable</span>(name=<span class="st">"vacancy concentration"</span>, mesh=mesh, value=<span class="nm">0.0</span>)
+c.<span class="fn">constrain</span>(<span class="nm">1.0</span>, mesh.facesLeft)
+c.<span class="fn">constrain</span>(<span class="nm">0.2</span>, mesh.facesRight)
+
+eq = <span class="fn">DiffusionTerm</span>(coeff=<span class="nm">1.0</span>)
+<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="nm">2000</span>):
+    res = eq.<span class="fn">sweep</span>(var=c)
+    <span class="kw">if</span> res < <span class="nm">1e-8</span>: <span class="kw">break</span>
+
+<span class="cm"># Reshape to 3D array c_3d[ix, iy, iz]</span>
+c_3d    = np.<span class="fn">array</span>(c.value).<span class="fn">reshape</span>((Nx,Ny,Nz), order=<span class="st">"F"</span>)
+iz_mid  = Nz // <span class="nm">2</span>
+c_slice = c_3d[:, :, iz_mid].T    <span class="cm"># (Ny, Nx)</span></code></pre>
+
+<!-- ══ EXAMPLE 4 ══ -->
+<h2 id="ex-convdiff">Example 4 — Steady Convection–Diffusion 1D</h2>
+<p>Contaminant transport in a channel. The Péclet number governs the shape of the concentration profile.</p>
+<div class="math-block">D d²φ/dx² − u dφ/dx = 0</div>
+<p>Analytical solution: φ(x) = (1 − e<sup>−(u/D)x</sup>) / (1 − e<sup>−(u/D)L</sup>)</p>
+
+<pre><code><span class="kw">from</span> fipy <span class="kw">import</span> CellVariable, Grid1D, DiffusionTerm, ExponentialConvectionTerm
+
+L, N   = <span class="nm">10.0</span>, <span class="nm">400</span>
+u, D   = <span class="nm">10.0</span>, <span class="nm">15.0</span>
+dx     = L / N
+Pe     = u * L / D
+<span class="fn">print</span>(<span class="st">f"Péclet number: Pe = </span>{Pe:.2f}<span class="st">"</span>)
+
+mesh = <span class="fn">Grid1D</span>(dx=dx, nx=N)
+phi  = <span class="fn">CellVariable</span>(name=<span class="st">"concentration"</span>, mesh=mesh, value=<span class="nm">0.0</span>)
+phi.<span class="fn">constrain</span>(<span class="nm">0.0</span>, mesh.facesLeft)
+phi.<span class="fn">constrain</span>(<span class="nm">1.0</span>, mesh.facesRight)
+
+eq = <span class="fn">DiffusionTerm</span>(coeff=D) - <span class="fn">ExponentialConvectionTerm</span>(coeff=[[-u]])
+eq.<span class="fn">solve</span>(var=phi)
+
+x_num   = np.<span class="fn">array</span>(mesh.cellCenters[<span class="nm">0</span>])
+phi_ana = (<span class="nm">1</span> - np.<span class="fn">exp</span>(-u/D * x_num)) / (<span class="nm">1</span> - np.<span class="fn">exp</span>(-u/D * L))
+error   = np.<span class="fn">max</span>(np.<span class="fn">abs</span>(np.<span class="fn">array</span>(phi.value) - phi_ana))
+<span class="fn">print</span>(<span class="st">f"Max error: </span>{error:.3e}<span class="st">"</span>)</code></pre>
+
+<!-- ══ EXAMPLE 5 ══ -->
+<h2 id="ex-transient">Example 5 — Transient Diffusion</h2>
+<p>Time-dependent diffusion of dopants in a semiconductor wafer. Profiles are saved at selected times.</p>
+<div class="math-block">∂c/∂t = D ∂²c/∂x²</div>
+
+<pre><code><span class="kw">from</span> fipy <span class="kw">import</span> CellVariable, Grid1D, TransientTerm, DiffusionTerm
+
+L, N  = <span class="nm">5e-6</span>, <span class="nm">100</span>
+D, dx = <span class="nm">2e-14</span>, L/N
+
+mesh = <span class="fn">Grid1D</span>(dx=dx, nx=N)
+c    = <span class="fn">CellVariable</span>(name=<span class="st">"dopant"</span>, mesh=mesh, value=<span class="nm">0.0</span>)
+c.<span class="fn">constrain</span>(<span class="nm">1.0</span>, mesh.facesLeft)   <span class="cm"># surface concentration</span>
+<span class="cm"># Right: insulated by default</span>
+
+eq = <span class="fn">TransientTerm</span>() == <span class="fn">DiffusionTerm</span>(coeff=D)
+
+dt          = <span class="nm">1000.0</span>
+t_final     = <span class="nm">5e6</span>
+tiempos_obj = [<span class="nm">1e5</span>, <span class="nm">5e5</span>, <span class="nm">1e6</span>, <span class="nm">2e6</span>, <span class="nm">5e6</span>]
+soluciones  = {}
+t = <span class="nm">0.0</span>
+
+<span class="kw">while</span> t &lt;= t_final:
+    eq.<span class="fn">sweep</span>(var=c, dt=dt)
+    t += dt
+    <span class="kw">for</span> to <span class="kw">in</span> tiempos_obj:
+        <span class="kw">if</span> <span class="fn">abs</span>(t - to) &lt; dt/<span class="nm">2</span>:
+            soluciones[to] = np.<span class="fn">array</span>(c.value)</code></pre>
+
+<!-- ══ EXAMPLE 6 ══ -->
+<h2 id="ex-full">Example 6 — Full Transport: Convection + Diffusion + Sink</h2>
+<p>Gas tracer in a calibration chamber with flow, diffusion, and wall absorption.</p>
+<div class="math-block">∂c/∂t + u ∂c/∂x = D ∂²c/∂x² − λ c</div>
+
+<pre><code><span class="kw">from</span> fipy <span class="kw">import</span> (CellVariable, Grid1D, TransientTerm,
+                  DiffusionTerm, ExponentialConvectionTerm, ImplicitSourceTerm)
+
+L, N   = <span class="nm">0.50</span>, <span class="nm">150</span>
+u      = <span class="nm">1e-3</span>
+D      = <span class="nm">2e-4</span>
+lam    = <span class="nm">5e-3</span>
+beta   = <span class="nm">-0.40</span>
+dx     = L / N
+
+mesh   = <span class="fn">Grid1D</span>(dx=dx, nx=N)
+x      = np.<span class="fn">array</span>(mesh.cellCenters[<span class="nm">0</span>])
+c_init = np.<span class="fn">where</span>(x &lt; <span class="nm">0.10</span>, <span class="nm">1.0</span>, <span class="nm">0.0</span>)
+c      = <span class="fn">CellVariable</span>(name=<span class="st">"tracer"</span>, mesh=mesh, value=c_init)
+
+c.<span class="fn">constrain</span>(<span class="nm">0.0</span>, mesh.facesLeft)
+c.faceGrad.<span class="fn">constrain</span>([beta], mesh.facesRight)
+
+eq = (<span class="fn">TransientTerm</span>()
+     + <span class="fn">ExponentialConvectionTerm</span>(coeff=[[u]])
+     == <span class="fn">DiffusionTerm</span>(coeff=D) - <span class="fn">ImplicitSourceTerm</span>(coeff=lam))
+
+dt = <span class="nm">10.0</span>
+<span class="kw">while</span> t &lt;= <span class="nm">1000.0</span>:
+    eq.<span class="fn">sweep</span>(var=c, dt=dt)
+    t += dt</code></pre>
+
+<hr/>
+
+<!-- CONVERGENCE -->
+<h2 id="convergence">Convergence & Residuals</h2>
+<p><code>sweep()</code> returns the residual norm after each iteration. Plotting it on a log scale reveals convergence behaviour.</p>
+
+<pre><code>plt.<span class="fn">figure</span>(figsize=(<span class="nm">8</span>, <span class="nm">4</span>))
+plt.<span class="fn">semilogy</span>(residuos, color=<span class="st">'blueviolet'</span>, lw=<span class="nm">2</span>)
+plt.<span class="fn">axhline</span>(tol, color=<span class="st">'lightgreen'</span>, ls=<span class="st">'--'</span>, lw=<span class="nm">1.5</span>, label=<span class="st">f'tol = </span>{tol:.0e}<span class="st">'</span>)
+plt.<span class="fn">xlabel</span>(<span class="st">'Iteration'</span>)
+plt.<span class="fn">ylabel</span>(<span class="st">'Residual (log scale)'</span>)
+plt.<span class="fn">title</span>(<span class="st">'Convergence of iterative solver'</span>)
+plt.<span class="fn">legend</span>()
+plt.<span class="fn">grid</span>(<span class="nm">True</span>, which=<span class="st">'both'</span>, alpha=<span class="nm">0.4</span>)
+plt.<span class="fn">tight_layout</span>()
+plt.<span class="fn">show</span>()</code></pre>
+
+<!-- ERRORS -->
+<h2 id="errors">Error Metrics</h2>
+<p>When an analytical solution exists, quantify numerical accuracy with three standard metrics:</p>
+
+<dl class="param-list">
+  <dt>Maximum error</dt><dd>Worst-case pointwise deviation.</dd>
+  <dt>Mean absolute error (MAE)</dt><dd>Average pointwise deviation.</dd>
+  <dt>Root mean square error (RMSE)</dt><dd>Penalises large deviations more heavily.</dd>
+</dl>
+
+<pre><code>phi_num = np.<span class="fn">array</span>(phi.value)
+phi_ana = ...   <span class="cm"># analytical expression evaluated at x_num</span>
+
+error_abs  = np.<span class="fn">abs</span>(phi_num - phi_ana)
+error_max  = np.<span class="fn">max</span>(error_abs)
+error_mae  = np.<span class="fn">mean</span>(error_abs)
+error_rmse = np.<span class="fn">sqrt</span>(np.<span class="fn">mean</span>(error_abs**<span class="nm">2</span>))
+
+<span class="fn">print</span>(<span class="st">f"Max error:  </span>{error_max:.3e}<span class="st">"</span>)
+<span class="fn">print</span>(<span class="st">f"MAE:        </span>{error_mae:.3e}<span class="st">"</span>)
+<span class="fn">print</span>(<span class="st">f"RMSE:       </span>{error_rmse:.3e}<span class="st">"</span>)</code></pre>
+
+<!-- TIMING -->
+<h2 id="timing">Execution Time</h2>
+<pre><code><span class="kw">import</span> time
+
+inicio = time.<span class="fn">perf_counter</span>()
+
+<span class="cm"># ... solve / sweep loop ...</span>
+
+fin    = time.<span class="fn">perf_counter</span>()
+<span class="fn">print</span>(<span class="st">f"Execution time: </span>{fin - inicio:.4f}<span class="st"> s"</span>)</code></pre>
+
+<div class="note">
+  <strong>Note</strong>
+  Use <code>time.perf_counter()</code> rather than <code>time.time()</code> for short intervals — it has higher resolution and is not affected by system clock adjustments.
+</div>
+
+</div><!-- #content -->
+
+<footer>
+  FiPy Scalar Transport Guide &nbsp;·&nbsp; Built with FiPy 3.x, NumPy, Matplotlib &nbsp;·&nbsp;
+  <a href="https://www.ctcms.nist.gov/fipy/" style="color:#1565c0;">FiPy Docs</a> &nbsp;·&nbsp;
+  <a href="https://numpy.org/doc/" style="color:#1565c0;">NumPy Docs</a>
+</footer>
+</div><!-- #main -->
+
+<!-- Right TOC -->
+<div id="toc">
+  <div class="toc-title">On this page</div>
+  <a href="#overview">Overview</a>
+  <a href="#workflow">Workflow</a>
+  <a href="#imports">Imports</a>
+  <a href="#mesh">Mesh</a>
+  <a href="#variables">Variables</a>
+  <a href="#boundary">Boundary Conditions</a>
+  <a href="#equations">Equations</a>
+  <a href="#solving">solve() vs sweep()</a>
+  <a href="#peclet">Péclet Number</a>
+  <a href="#ex-laplace1d">Ex 1 — Laplace 1D</a>
+  <a href="#ex-laplace2d">Ex 2 — Laplace 2D</a>
+  <a href="#ex-laplace3d">Ex 3 — Laplace 3D</a>
+  <a href="#ex-convdiff">Ex 4 — Conv–Diff</a>
+  <a href="#ex-transient">Ex 5 — Transient</a>
+  <a href="#ex-full">Ex 6 — Full Transport</a>
+  <a href="#convergence">Convergence</a>
+  <a href="#errors">Error Metrics</a>
+  <a href="#timing">Timing</a>
+</div>
+
+<script>
+  // Highlight active sidebar link on scroll
+  const links = document.querySelectorAll('#sidebar nav a');
+  const sections = document.querySelectorAll('h2[id]');
+
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(s => {
+      if (window.scrollY >= s.offsetTop - 80) current = s.id;
+    });
+    links.forEach(l => {
+      l.classList.toggle('active', l.getAttribute('href') === '#' + current);
+    });
+  });
+</script>
+</body>
+</html>
